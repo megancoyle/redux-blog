@@ -1,15 +1,31 @@
-import { createSlice } from '@reduxjs/toolkit'
+import {
+  createSlice,
+  createAsyncThunk,
+  createEntityAdapter,
+} from '@reduxjs/toolkit'
+import { client } from '../../api/client'
 
-const initialState = [
-    { id: '0', name: 'John Smith' },
-    { id: '1', name: 'Sarah Parker' },
-    { id: '2', name: 'Anne Smith' }
-]
+const usersAdapter = createEntityAdapter()
+
+const initialState = usersAdapter.getInitialState()
+
+export const fetchUsers = createAsyncThunk('users/fetchUsers', async () => {
+  const response = await client.get('/fakeApi/users')
+  return response.users
+})
 
 const usersSlice = createSlice({
-    name: 'users',
-    initialState,
-    reducers: {}
+  name: 'users',
+  initialState,
+  reducers: {},
+  extraReducers: {
+    [fetchUsers.fulfilled]: usersAdapter.setAll,
+  },
 })
 
 export default usersSlice.reducer
+
+export const {
+  selectAll: selectAllUsers,
+  selectById: selectUserById,
+} = usersAdapter.getSelectors((state) => state.users)
